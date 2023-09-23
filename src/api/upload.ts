@@ -9,7 +9,7 @@ export async function upLoadAsset(params: { asset: File; key: string; hold: bool
     const url = import.meta.env.PROD ? 'http://assets.araden.top/' : '/api/'
     const { data } = await axios.post<string>(url, formData, {
       headers: {
-        'upload-assets-key': MD5(params.key + new Date().toLocaleDateString()).toString()
+        'upload-assets-key': MD5(params.key + new Date().toLocaleDateString('zh-CN')).toString()
       }
     })
     return data

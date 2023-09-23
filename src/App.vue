@@ -17,10 +17,12 @@
 import { ref } from 'vue'
 import { upLoadAsset } from './api/upload'
 
+const defaultTip = '上传成功会在这里展示用于访问文件的文件名'
+
 const input = ref<HTMLInputElement>()
 const key = ref('')
 const hold = ref(false)
-const tip = ref('上传成功会在这里展示用于访问文件的文件名')
+const tip = ref(defaultTip)
 
 async function onUpload() {
   const file = input.value.files[0]
@@ -31,5 +33,8 @@ async function onUpload() {
     key: key.value
   })
   tip.value = data
+  setTimeout(() => {
+    tip.value = defaultTip
+  }, 10000)
 }
 </script>
