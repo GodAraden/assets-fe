@@ -11,10 +11,10 @@
     <label for="hold">保留原名</label> <input type="checkbox" v-model="hold" id="hold" />
   </div>
 
-  <button id="upload" @click="onUpload">上传</button> <br /><br />
-  <div @click="copy" :style="{ cursor: tip === defaultTip || tip === successTip ? 'default' : 'pointer' }">
+  <button class="btn" @click="onUpload">上传</button> <br /><br />
+  <button class="btn" @click="copy" :disabled="tip === defaultTip || tip === successTip">
     {{ tip }}
-  </div>
+  </button>
 </template>
 
 <script setup lang="ts">
@@ -76,7 +76,7 @@ async function onUpload() {
 </script>
 
 <style>
-#upload {
+.btn {
   border-radius: 8px;
   border: 1px solid transparent;
   padding: 0.6em 1.2em;
@@ -85,11 +85,11 @@ async function onUpload() {
   transition: border-color 0.25s;
   background-color: #f9f9f9;
 }
-#upload:hover {
+.btn:hover {
   border-color: #646cff;
 }
-#upload:focus,
-#upload:focus-visible {
+.btn:focus,
+.btn:focus-visible {
   outline: 4px auto -webkit-focus-ring-color;
 }
 </style>
