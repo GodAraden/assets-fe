@@ -2,7 +2,7 @@
   <img src="/favicon.ico" width="64" height="64" />
   <h3>文件上传 UI，一切从简</h3>
 
-  <div style="display: grid; grid-template-columns: 72px 1fr; gap: 20px; margin-bottom: 16px">
+  <div style="display: grid; grid-template-columns: 72px 1fr; gap: 20px">
     <!-- 文件上传框 -->
     <label for="asset">文件</label> <input type="file" ref="input" id="asset" />
     <!-- 密钥输入框 -->
@@ -11,10 +11,8 @@
     <label for="hold">保留原名</label> <input type="checkbox" v-model="hold" id="hold" />
   </div>
 
-  <button class="btn" @click="onUpload">上传</button> <br /><br />
-  <button class="btn" @click="copy" :disabled="tip === defaultTip || tip === successTip">
-    {{ tip }}
-  </button>
+  <button style="margin: 32px" @click="onUpload">上传</button> <br />
+  <button :disabled="!isTipFilename()" @click="onCopy">{{ tip }}</button>
 </template>
 
 <script setup lang="ts">
@@ -30,24 +28,38 @@ const key = ref('')
 const hold = ref(false)
 const tip = ref(defaultTip)
 
-// 复制资源完整访问 url 到剪切板
-function copy() {
-  if (tip.value !== defaultTip && tip.value !== successTip) {
-    const domain = import.meta.env.PROD ? 'http://assets.araden.top/' : 'http://localhost:10086/'
-    if (navigator.clipboard && window.isSecureContext) {
-      navigator.clipboard.writeText(domain + tip.value).then(() => {
-        tip.value = successTip
-      })
-    } else {
-      let textArea = document.createElement('textarea')
-      textArea.value = domain + tip.value
-      document.body.appendChild(textArea)
-      textArea.focus()
-      textArea.select()
-      document.execCommand('copy')
+function isTipFilename() {
+  const notFilenameSuffix = ['🙌', '🎇', '🙀']
+  let res = true
+  for (const emoji of notFilenameSuffix) {
+    res = res && !tip.value.endsWith(emoji)
+  }
+  return res
+}
+
+function copy(text: string) {
+  if (navigator.clipboard && window.isSecureContext) {
+    return navigator.clipboard.writeText(text)
+  } else {
+    let textArea = document.createElement('textarea')
+    textArea.value = text
+    textArea.style.position = 'absolute'
+    textArea.style.opacity = '0'
+    document.body.appendChild(textArea)
+    textArea.select()
+    return new Promise((resolve, reject) => {
+      document.execCommand('copy') ? resolve(null) : reject()
       textArea.remove()
-      tip.value = successTip
-    }
+    })
+  }
+}
+
+// 复制资源完整访问 url 到剪切板
+async function onCopy() {
+  if (isTipFilename()) {
+    const domain = import.meta.env.PROD ? 'http://assets.araden.top/' : 'http://localhost:10086/'
+    await copy(domain + tip.value)
+    tip.value = successTip
   }
 }
 
@@ -66,7 +78,7 @@ async function upLoadAsset(params: { asset: File; key: string; hold: boolean }) 
     })
     return data
   } catch (error) {
-    return `${error.response.data.statusCode}: ${error.response.data.message}`
+    return `${error.response?.data.statusCode || '444'}: ${error.response?.data.message || '未知错误'} 🙀`
   }
 }
 
@@ -85,22 +97,3 @@ async function onUpload() {
   }, 23300)
 }
 </script>
-
-<style>
-.btn {
-  border-radius: 8px;
-  border: 1px solid transparent;
-  padding: 0.6em 1.2em;
-  font-size: 1em;
-  cursor: pointer;
-  transition: border-color 0.25s;
-  background-color: #f9f9f9;
-}
-.btn:hover {
-  border-color: #646cff;
-}
-.btn:focus,
-.btn:focus-visible {
-  outline: 4px auto -webkit-focus-ring-color;
-}
-</style>
