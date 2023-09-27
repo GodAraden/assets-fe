@@ -34,9 +34,20 @@ const tip = ref(defaultTip)
 function copy() {
   if (tip.value !== defaultTip && tip.value !== successTip) {
     const domain = import.meta.env.PROD ? 'http://assets.araden.top/' : 'http://localhost:10086/'
-    navigator.clipboard.writeText(domain + tip.value).then(() => {
+    if (navigator.clipboard && window.isSecureContext) {
+      navigator.clipboard.writeText(domain + tip.value).then(() => {
+        tip.value = successTip
+      })
+    } else {
+      let textArea = document.createElement('textarea')
+      textArea.value = domain + tip.value
+      document.body.appendChild(textArea)
+      textArea.focus()
+      textArea.select()
+      document.execCommand('copy')
+      textArea.remove()
       tip.value = successTip
-    })
+    }
   }
 }
 
