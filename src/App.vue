@@ -57,7 +57,7 @@ function copy(text: string) {
 // 复制资源完整访问 url 到剪切板
 async function onCopy() {
   if (isTipFilename()) {
-    const domain = import.meta.env.PROD ? 'http://assets.araden.top/' : 'http://localhost:10086/'
+    const domain = import.meta.env.PROD ? 'https://assets.araden.top/' : 'http://localhost:10086/'
     await copy(domain + tip.value)
     tip.value = successTip
   }
@@ -70,7 +70,7 @@ async function upLoadAsset(params: { asset: File; key: string; hold: boolean }) 
   formData.append('hold', params.hold ? 'original' : '')
   formData.append('name', params.asset.name)
   try {
-    const url = import.meta.env.PROD ? 'http://assets.araden.top/' : '/api/'
+    const url = import.meta.env.PROD ? 'https://assets.araden.top/' : '/api/'
     const { data } = await axios.post<string>(url, formData, {
       headers: {
         'upload-assets-key': MD5(params.key + new Date().toLocaleDateString('zh-CN')).toString()
