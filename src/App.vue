@@ -9,6 +9,8 @@
     <label for="key">密钥</label> <input type="password" v-model="key" id="key" />
     <!-- 上传后是否保留原文件名，即不加时间戳 -->
     <label for="hold">保留原名</label> <input type="checkbox" v-model="hold" id="hold" />
+    <!-- 是否在文件名前加上 shared- 前缀 -->
+    <label for="shared">共享文件</label> <input type="checkbox" v-model="shared" id="shared" />
   </div>
 
   <button style="margin: 32px" @click="onUpload">上传</button> <br />
@@ -23,11 +25,15 @@ import axios from 'axios'
 const defaultTip = '上传成功后，这里会展示用于访问文件的文件名，点击复制完整URL 🙌'
 const successTip = '复制成功 🎇'
 
-const input = ref<HTMLInputElement>()
 const key = ref('')
-const hold = ref(false)
+const hold = ref(true)
+const shared = ref(false)
 const tip = ref(defaultTip)
+const input = ref<HTMLInputElement>()
 
+let timer = null
+
+// 判断提示信息是否是文件名，非文件名的提示内容会以一个 emoji 结尾
 function isTipFilename() {
   const notFilenameSuffix = ['🙌', '🎇', '🙀']
   let res = true
@@ -37,43 +43,27 @@ function isTipFilename() {
   return res
 }
 
-function copy(text: string) {
-  if (navigator.clipboard && window.isSecureContext) {
-    return navigator.clipboard.writeText(text)
-  } else {
-    let textArea = document.createElement('textarea')
-    textArea.value = text
-    textArea.style.position = 'absolute'
-    textArea.style.opacity = '0'
-    document.body.appendChild(textArea)
-    textArea.select()
-    return new Promise((resolve, reject) => {
-      document.execCommand('copy') ? resolve(null) : reject()
-      textArea.remove()
-    })
-  }
-}
-
 // 复制资源完整访问 url 到剪切板
 async function onCopy() {
   if (isTipFilename()) {
     const domain = import.meta.env.PROD ? 'https://assets.araden.top/' : 'http://localhost:10086/'
-    await copy(domain + tip.value)
+    await navigator.clipboard.writeText(domain + tip.value)
     tip.value = successTip
   }
 }
 
 // 上传资源，资源的命名单独传一下
-async function upLoadAsset(params: { asset: File; key: string; hold: boolean }) {
+async function upLoadAsset(asset: File) {
   const formData = new FormData()
-  formData.append('asset', params.asset)
-  formData.append('hold', params.hold ? 'original' : '')
-  formData.append('name', params.asset.name)
+  formData.append('asset', asset)
+  formData.append('hold', hold.value ? 'hold' : '')
+  formData.append('shared', shared.value ? 'shared' : '')
+  formData.append('name', asset.name)
   try {
     const url = import.meta.env.PROD ? 'https://assets.araden.top/' : '/api/'
     const { data } = await axios.post<string>(url, formData, {
       headers: {
-        'upload-assets-key': MD5(params.key + new Date().toLocaleDateString('zh-CN')).toString()
+        'upload-assets-key': MD5(key.value + new Date().toLocaleDateString('zh-CN')).toString()
       }
     })
     return data
@@ -86,14 +76,8 @@ async function upLoadAsset(params: { asset: File; key: string; hold: boolean }) 
 async function onUpload() {
   const file = input.value.files[0]
   if (!file) return
-  const data = await upLoadAsset({
-    asset: file,
-    hold: hold.value,
-    key: key.value
-  })
-  tip.value = data
-  setTimeout(() => {
-    tip.value = defaultTip
-  }, 23300)
+  tip.value = await upLoadAsset(file)
+  clearTimeout(timer)
+  timer = setTimeout(() => (tip.value = defaultTip), 23300)
 }
 </script>
