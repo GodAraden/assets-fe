@@ -27,7 +27,7 @@ jobs:
         uses: actions/setup-node@v3
         with:
           node-version: ${{ env.NODE_VERSION }}
-          cache: 'pnpm'
+          cache: "pnpm"
 
       - name: build
         run: pnpm install && pnpm build
@@ -41,9 +41,9 @@ jobs:
           SSH_PRIVATE_KEY: ${{ secrets.SERVER_SSH_KEY }} # ssh 密钥对中的私钥
           REMOTE_HOST: ${{ secrets.REMOTE_HOST  }} # 服务器主机 ip
           REMOTE_USER: ${{ env.REMOTE_USER }} # 服务器用户名
-          SOURCE: '${{ env.PROJECT_DIR }}' # 要进行上传的文件目录
+          SOURCE: "${{ env.PROJECT_DIR }}" # 要进行上传的文件目录
           TARGET: ${{ env.TARGET_DIR }} # 要进行部署的生产环境目录
-          ARGS: '-rltgoDzvO'
+          ARGS: "-rltgoDzvO"
           SCRIPT_BEFORE: |
             cd ${{ env.TARGET_DIR }}
             chattr -i ${{ env.PROJECT_DIR }}/.user.ini
